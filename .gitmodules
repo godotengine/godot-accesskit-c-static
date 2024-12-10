@@ -1,0 +1,3 @@
+[submodule "accesskit-c"]
+	path = accesskit-c
+	url = https://github.com/AccessKit/accesskit-c
