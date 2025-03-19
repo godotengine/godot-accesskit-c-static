@@ -1,0 +1,96 @@
+name: Godot AceessKit-C static libs
+
+on:
+  pull_request:
+
+jobs:
+  build-binaries:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: macOS-latest
+            target: aarch64-apple-darwin
+            cmake-options: -DCMAKE_OSX_ARCHITECTURES=arm64
+            path: macos/arm64
+          - os: macOS-latest
+            target: x86_64-apple-darwin
+            cmake-options: -DCMAKE_OSX_ARCHITECTURES=x86_64
+            path: macos/x86_64
+          - os: windows-2019
+            target: aarch64-pc-windows-msvc
+            setup-step: 'cmd.exe /k "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsamd64_x86.bat" `& powershell'
+            cmake-options: -A ARM64
+            path: windows/arm64/msvc
+          - os: windows-2019
+            target: i686-pc-windows-msvc
+            setup-step: 'cmd.exe /k "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars32.bat" `& powershell'
+            cmake-options: -A Win32
+            path: windows/x86/msvc
+          - os: windows-2019
+            target: x86_64-pc-windows-msvc
+            setup-step: 'cmd.exe /k "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat" `& powershell'
+            path: windows/x86_64/msvc
+          - os: ubuntu-latest
+            target: aarch64-pc-windows-gnullvm
+            setup-step: curl -L -O https://github.com/mstorsjo/llvm-mingw/releases/download/20240619/llvm-mingw-20240619-ucrt-ubuntu-20.04-x86_64.tar.xz && tar -xf ./llvm-mingw-20240619-ucrt-ubuntu-20.04-x86_64.tar.xz && rm llvm-mingw-*.xz && mv llvm-mingw-* "$HOME/llvm-mingw" && git apply ./godot-pathces/patch_gnullvm.diff && echo "$HOME/llvm-mingw/bin" >> $GITHUB_PATH
+            cmake-options: -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_PROCESSOR=arm64 -DCMAKE_C_COMPILER=$HOME/llvm-mingw/bin/aarch64-w64-mingw32-clang -DCMAKE_CXX_COMPILER=$HOME/llvm-mingw/bin/aarch64-w64-mingw32-clang++
+            post-step: mv ./lib/windows/arm64/mingw ./lib/windows/arm64/mingw-llvm
+            path: windows/arm64/mingw-llvm
+          - os: ubuntu-latest
+            target: i686-pc-windows-gnullvm
+            setup-step: curl -L -O https://github.com/mstorsjo/llvm-mingw/releases/download/20240619/llvm-mingw-20240619-ucrt-ubuntu-20.04-x86_64.tar.xz && tar -xf ./llvm-mingw-20240619-ucrt-ubuntu-20.04-x86_64.tar.xz && rm llvm-mingw-*.xz && mv llvm-mingw-* "$HOME/llvm-mingw" && git apply ./godot-pathces/patch_gnullvm.diff && echo "$HOME/llvm-mingw/bin" >> $GITHUB_PATH
+            cmake-options: -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_PROCESSOR=x86 -DCMAKE_C_COMPILER=$HOME/llvm-mingw/bin/i686-w64-mingw32-clang -DCMAKE_CXX_COMPILER=$HOME/llvm-mingw/bin/i686-w64-mingw32-clang++
+            post-step: mv ./lib/windows/x86/mingw ./lib/windows/x86/mingw-llvm
+            path: windows/x86/mingw-llvm
+          - os: ubuntu-latest
+            target: x86_64-pc-windows-gnullvm
+            setup-step: curl -L -O https://github.com/mstorsjo/llvm-mingw/releases/download/20240619/llvm-mingw-20240619-ucrt-ubuntu-20.04-x86_64.tar.xz && tar -xf ./llvm-mingw-20240619-ucrt-ubuntu-20.04-x86_64.tar.xz && rm llvm-mingw-*.xz && mv llvm-mingw-* "$HOME/llvm-mingw" && git apply ./godot-pathces/patch_gnullvm.diff && echo "$HOME/llvm-mingw/bin" >> $GITHUB_PATH
+            cmake-options: -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_PROCESSOR=x86_64 -DCMAKE_C_COMPILER=$HOME/llvm-mingw/bin/x86_64-w64-mingw32-clang -DCMAKE_CXX_COMPILER=$HOME/llvm-mingw/bin/x86_64-w64-mingw32-clang++
+            post-step: mv ./lib/windows/x86_64/mingw ./lib/windows/x86_64/mingw-llvm
+            path: windows/x86_64/mingw-llvm
+          - os: ubuntu-latest
+            target: i686-pc-windows-gnu
+            setup-step: sudo apt update && sudo apt install -y mingw-w64
+            cmake-options: -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_PROCESSOR=x86 -DCMAKE_C_COMPILER=i686-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=i686-w64-mingw32-g++
+            path: windows/x86/mingw
+          - os: ubuntu-latest
+            target: x86_64-pc-windows-gnu
+            setup-step: sudo apt update && sudo apt install -y mingw-w64
+            cmake-options: -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_PROCESSOR=x86_64 -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++
+            path: windows/x86_64/mingw
+          - os: ubuntu-latest
+            target: i686-unknown-linux-gnu
+            setup-step: sudo apt update && sudo apt install -y gcc-multilib g++-multilib
+            cmake-options: -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=x86
+            path: linux/x86
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            path: linux/x86_64
+
+    name: Build
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+
+      - name: install stable toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+
+      - name: build libraries
+        run: |
+          ${{ matrix.setup-step || '' }}
+          cd accesskit-c
+          cmake -S . -B build -DRust_CARGO_TARGET=${{ matrix.target }} ${{ matrix.cmake-options || '' }} ${{ !contains(matrix.target, 'msvc') && '-DCMAKE_BUILD_TYPE=Release' || '' }}
+          cmake --build build ${{ contains(matrix.target, 'msvc') && '--config Release' || '' }}
+          cmake --install build ${{ contains(matrix.target, 'msvc') && '--config Release' || '' }}
+          ${{ matrix.post-step || '' }}
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: accesskit-c/lib

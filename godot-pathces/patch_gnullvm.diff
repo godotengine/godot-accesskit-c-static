@@ -1,13 +1,13 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 05c8d7e..3458978 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
+index a09b9b6..5def2ce 100644
+--- a/accesskit-c/CMakeLists.txt
++++ b/accesskit-c/CMakeLists.txt
 @@ -11,7 +11,7 @@ if (ACCESSKIT_BUILD_LIBRARIES)
      FetchContent_Declare(
          Corrosion
          GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
 -        GIT_TAG v0.5.1
-+        GIT_TAG 934fee27ad0fa8f7ec24dcf671f7a40247c2bc2d
++        GIT_TAG fcd8b41981cb1e80f4dcc20fa8970dc6aa981c9f
      )
      FetchContent_MakeAvailable(Corrosion)
  
