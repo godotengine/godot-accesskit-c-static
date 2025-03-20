@@ -1,6 +1,7 @@
 name: Godot AceessKit-C static libs
 
 on:
+  push:
   pull_request:
 
 jobs:
@@ -67,6 +68,16 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             path: linux/x86_64
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            setup-step: curl -L -O https://github.com/godotengine/buildroot/releases/download/godot-2023.08.x-4/aarch64-godot-linux-gnu_sdk-buildroot.tar.bz2 && tar -xf ./aarch64-godot-linux-gnu_sdk-buildroot.tar.bz2 && rm aarch64-godot-linux-*.bz2 && mv aarch64-godot-linux-* "$HOME/godot-sdk" && pushd $HOME/godot-sdk && ./relocate-sdk.sh && popd && echo "$HOME/godot-sdk/bin" >> $GITHUB_PATH
+            cmake-options: -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=arm64 -DCMAKE_C_COMPILER=$HOME/godot-sdk/bin/aarch64-godot-linux-gnu-cc -DCMAKE_CXX_COMPILER=$HOME/godot-sdk/bin/aarch64-godot-linux-gnu-c++
+            path: linux/arm64
+          - os: ubuntu-latest
+            target: arm-unknown-linux-gnueabihf
+            setup-step: curl -L -O https://github.com/godotengine/buildroot/releases/download/godot-2023.08.x-4/arm-godot-linux-gnueabihf_sdk-buildroot.tar.bz2 && tar -xf ./arm-godot-linux-gnueabihf_sdk-buildroot.tar.bz2 && rm arm-godot-linux-*.bz2 && mv arm-godot-linux-* "$HOME/godot-sdk" && pushd $HOME/godot-sdk && ./relocate-sdk.sh && popd && git apply ./godot-pathces/patch_arm32.diff && echo "$HOME/godot-sdk/bin" >> $GITHUB_PATH
+            cmake-options: -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=arm32 -DCMAKE_C_COMPILER=$HOME/godot-sdk/bin/arm-godot-linux-gnueabihf-cc -DCMAKE_CXX_COMPILER=$HOME/godot-sdk/bin/arm-godot-linux-gnueabihf-c++
+            path: linux/arm32
 
     name: Build
     steps:
