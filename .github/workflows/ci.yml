@@ -78,10 +78,18 @@ jobs:
             setup-step: curl -L -O https://github.com/godotengine/buildroot/releases/download/godot-2023.08.x-4/arm-godot-linux-gnueabihf_sdk-buildroot.tar.bz2 && tar -xf ./arm-godot-linux-gnueabihf_sdk-buildroot.tar.bz2 && rm arm-godot-linux-*.bz2 && mv arm-godot-linux-* "$HOME/godot-sdk" && pushd $HOME/godot-sdk && ./relocate-sdk.sh && popd && git apply ./godot-pathces/patch_arm32.diff && echo "$HOME/godot-sdk/bin" >> $GITHUB_PATH
             cmake-options: -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=arm32 -DCMAKE_C_COMPILER=$HOME/godot-sdk/bin/arm-godot-linux-gnueabihf-cc -DCMAKE_CXX_COMPILER=$HOME/godot-sdk/bin/arm-godot-linux-gnueabihf-c++
             path: linux/arm32
+          - os: ubuntu-latest
+            target: aarch64-linux-android
+            cmake-options: -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-28
+            path: android/arm64-v8a
+          - os: ubuntu-latest
+            target: x86_64-linux-android
+            cmake-options: -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake -DANDROID_ABI=x86_64 -DANDROID_PLATFORM=android-28
+            path: android/x86_64
 
     name: Build
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: 'true'
 
@@ -101,7 +109,7 @@ jobs:
           ${{ matrix.post-step || '' }}
 
       - name: Upload binaries
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.target }}
           path: accesskit-c/lib
