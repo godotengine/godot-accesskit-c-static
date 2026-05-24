@@ -94,6 +94,14 @@ jobs:
             target: i686-linux-android
             cmake-options: -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake -DANDROID_ABI=x86 -DANDROID_PLATFORM=android-28
             path: android/x86
+          - os: macOS-latest
+            target: aarch64-apple-ios
+            cmake-options: -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_SYSROOT=iphoneos -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0
+            path: ios/arm64
+          - os: macOS-latest
+            target: aarch64-apple-ios-sim
+            cmake-options: -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_SYSROOT=iphonesimulator -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0
+            path: ios-simulator/arm64
 
     name: Build
     steps:
@@ -122,8 +130,33 @@ jobs:
           name: ${{ matrix.target }}
           path: accesskit-c/lib
 
-  publish:
+  package-ios-xcframework:
     needs: [build-binaries]
+    runs-on: macOS-latest
+    name: Package iOS xcframework
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: aarch64-apple-ios*
+          path: artifacts
+
+      - name: Create xcframework
+        run: |
+          mkdir -p accesskit-c/lib/ios
+          xcodebuild -create-xcframework \
+            -library artifacts/aarch64-apple-ios/ios/arm64/static/libaccesskit.a \
+            -library artifacts/aarch64-apple-ios-sim/ios-simulator/arm64/static/libaccesskit.a \
+            -output accesskit-c/lib/ios/AccessKit.xcframework
+
+      - name: Upload xcframework
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-xcframework
+          path: accesskit-c/lib
+
+  publish:
+    needs: [build-binaries, package-ios-xcframework]
     runs-on: ubuntu-latest
     name: Publish
 
