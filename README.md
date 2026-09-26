@@ -11,7 +11,9 @@ See [Releases page](https://github.com/godotengine/godot-accesskit-c-static/rele
 >
 > - Godot [4.6](https://github.com/godotengine/godot/releases/tag/4.6-stable), [4.6.1](https://github.com/godotengine/godot/releases/tag/4.6.1-stable) - [AcceeKit 0.18.0](https://github.com/godotengine/godot-accesskit-c-static/releases/tag/0.18.0)
 > 
-> - Godot [4.7.dev](https://github.com/godotengine/godot/tree/master), [4.6.dev](https://github.com/godotengine/godot/tree/4.6), [4.6.2](https://github.com/godotengine/godot/releases/tag/4.6.2-stable) - [AcceeKit 0.21.2](https://github.com/godotengine/godot-accesskit-c-static/releases/tag/0.21.2)
+> - Godot [4.6.2](https://github.com/godotengine/godot/releases/tag/4.6.2-stable), [4.6.3](https://github.com/godotengine/godot/releases/tag/4.6.3-stable), [4.7](https://github.com/godotengine/godot/releases/tag/4.7-stable), [4.7.1](https://github.com/godotengine/godot/releases/tag/4.7.1-stable),  - [AcceeKit 0.21.2](https://github.com/godotengine/godot-accesskit-c-static/releases/tag/0.21.2)
+>
+> - Godot [4.7.2](https://github.com/godotengine/godot/releases/tag/4.7.2-stable) - [AcceeKit 0.22.3](https://github.com/godotengine/godot-accesskit-c-static/releases/tag/0.22.3)
 
 ---
 
