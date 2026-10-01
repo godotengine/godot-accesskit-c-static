@@ -96,12 +96,16 @@ jobs:
             path: android/x86
           - os: macOS-latest
             target: aarch64-apple-ios
-            cmake-options: -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_SYSROOT=iphoneos -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0
+            cmake-options: -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_SYSROOT=iphoneos
             path: ios/arm64
           - os: macOS-latest
             target: aarch64-apple-ios-sim
-            cmake-options: -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_SYSROOT=iphonesimulator -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0
+            cmake-options: -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_SYSROOT=iphonesimulator
             path: ios-simulator/arm64
+          - os: macOS-latest
+            target: x86_64-apple-ios
+            cmake-options: -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_SYSROOT=iphonesimulator
+            path: ios-simulator/x86_64
 
     name: Build
     steps:
@@ -127,7 +131,7 @@ jobs:
       - name: Upload binaries
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.target }}
+          name: ac-${{ matrix.target }}
           path: accesskit-c/lib
 
   package-ios-xcframework:
@@ -138,16 +142,18 @@ jobs:
     steps:
       - uses: actions/download-artifact@v8
         with:
-          pattern: aarch64-apple-ios*
+          pattern: ac-*-apple-ios*
           path: artifacts
 
       - name: Create xcframework
         run: |
           mkdir -p accesskit-c/lib/ios
+          lipo -create artifacts/ac-aarch64-apple-ios-sim/ios-simulator/arm64/static/libaccesskit.a artifacts/ac-x86_64-apple-ios/ios-simulator/x86_64/static/libaccesskit.a -output accesskit-c/lib/ios/libaccesskit_sim.a
           xcodebuild -create-xcframework \
-            -library artifacts/aarch64-apple-ios/ios/arm64/static/libaccesskit.a \
-            -library artifacts/aarch64-apple-ios-sim/ios-simulator/arm64/static/libaccesskit.a \
+            -library artifacts/ac-aarch64-apple-ios/ios/arm64/static/libaccesskit.a \
+            -library accesskit-c/lib/ios/libaccesskit_sim.a \
             -output accesskit-c/lib/ios/AccessKit.xcframework
+          rm accesskit-c/lib/ios/libaccesskit_sim.a
 
       - name: Upload xcframework
         uses: actions/upload-artifact@v7
