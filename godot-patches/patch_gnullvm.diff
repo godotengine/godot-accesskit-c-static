@@ -6,7 +6,7 @@ index a09b9b6..5def2ce 100644
      FetchContent_Declare(
          Corrosion
          GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
--        GIT_TAG v0.5.1
+-        GIT_TAG v0.6.1
 +        GIT_TAG fcd8b41981cb1e80f4dcc20fa8970dc6aa981c9f
      )
      FetchContent_MakeAvailable(Corrosion)

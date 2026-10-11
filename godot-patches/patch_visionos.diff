@@ -1,0 +1,47 @@
+diff --git a/accesskit-config.cmake b/accesskit-config.cmake
+index 938161c..edbe8f2 100644
+--- a/accesskit-c/accesskit-config.cmake
++++ b/accesskit-c/accesskit-config.cmake
+@@ -13,9 +13,9 @@ set_property(
+     PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${ACCESSKIT_INCLUDE_DIR}"
+ )
+ if (_accesskit_os STREQUAL "macos")
+     target_link_libraries(accesskit-static INTERFACE "-framework AppKit" "-framework Foundation" "-framework CoreFoundation" objc c++)
+-elseif (_accesskit_os STREQUAL "ios" OR _accesskit_os STREQUAL "ios-simulator")
++elseif (_accesskit_os STREQUAL "ios" OR _accesskit_os STREQUAL "ios-simulator" OR _accesskit_os STREQUAL "visionos" OR _accesskit_os STREQUAL "visionos-simulator")
+     target_link_libraries(accesskit-static INTERFACE "-framework UIKit" "-framework Foundation" "-framework CoreFoundation" objc c++)
+ elseif (_accesskit_os STREQUAL "android")
+     target_link_libraries(accesskit-static INTERFACE android log)
+ elseif (_accesskit_os STREQUAL "linux")
+@@ -31,9 +31,9 @@ if (_accesskit_os STREQUAL "windows")
+         TARGET accesskit-shared
+         PROPERTY IMPORTED_IMPLIB "${_accesskit_implib}"
+     )
+ endif()
+-if (_accesskit_os STREQUAL "macos" OR _accesskit_os STREQUAL "ios" OR _accesskit_os STREQUAL "ios-simulator")
++if (_accesskit_os STREQUAL "macos" OR _accesskit_os STREQUAL "ios" OR _accesskit_os STREQUAL "ios-simulator" OR _accesskit_os STREQUAL "visionos" OR _accesskit_os STREQUAL "visionos-simulator")
+     set(_accesskit_shared_lib "libaccesskit.dylib")
+ elseif (_accesskit_os STREQUAL "android" OR _accesskit_os STREQUAL "linux")
+     set(_accesskit_shared_lib "libaccesskit.so")
+ elseif (_accesskit_os STREQUAL "windows")
+diff --git a/accesskit.cmake b/accesskit.cmake
+index 81d468a..37086db 100644
+--- a/accesskit-c/accesskit.cmake
++++ b/accesskit-c/accesskit.cmake
+@@ -9,8 +9,16 @@ if (APPLE)
+         else()
+             set(_accesskit_os "ios")
+         endif()
+         unset(_accesskit_sysroot)
++    elseif (CMAKE_SYSTEM_NAME STREQUAL "visionOS")
++        string(TOLOWER "${CMAKE_OSX_SYSROOT}" _accesskit_sysroot)
++        if (_accesskit_sysroot MATCHES "xrsimulator")
++            set(_accesskit_os "visionos-simulator")
++        else()
++            set(_accesskit_os "visionos")
++        endif()
++        unset(_accesskit_sysroot)
+     else()
+         set(_accesskit_os "macos")
+     endif()
+     if (CMAKE_OSX_ARCHITECTURES MATCHES "(ARM64|arm64|aarch64)")

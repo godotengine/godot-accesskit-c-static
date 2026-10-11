@@ -106,6 +106,16 @@ jobs:
             target: x86_64-apple-ios
             cmake-options: -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_SYSROOT=iphonesimulator
             path: ios-simulator/x86_64
+          - os: macOS-latest
+            target: aarch64-apple-visionos
+            setup-step: git apply ./godot-patches/patch_visionos.diff && git apply ./godot-patches/patch_visionos2.diff
+            cmake-options: -DCMAKE_SYSTEM_NAME=visionOS -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_SYSROOT=xros
+            path: visionos/arm64
+          - os: macOS-latest
+            target: aarch64-apple-visionos-sim
+            setup-step: git apply ./godot-patches/patch_visionos.diff && git apply ./godot-patches/patch_visionos2.diff
+            cmake-options: -DCMAKE_SYSTEM_NAME=visionOS -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_SYSROOT=xrsimulator
+            path: visionos-simulator/arm64
 
     name: Build
     steps:
@@ -161,8 +171,33 @@ jobs:
           name: ios-xcframework
           path: accesskit-c/lib
 
+  package-xros-xcframework:
+    needs: [build-binaries]
+    runs-on: macOS-latest
+    name: Package visionOS xcframework
+
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: ac-*-apple-visionos*
+          path: artifacts
+
+      - name: Create xcframework
+        run: |
+          mkdir -p accesskit-c/lib/visionos
+          xcodebuild -create-xcframework \
+            -library artifacts/ac-aarch64-apple-visionos/visionos/arm64/static/libaccesskit.a \
+            -library artifacts/ac-aarch64-apple-visionos-sim/visionos-simulator/arm64/static/libaccesskit.a \
+            -output accesskit-c/lib/visionos/AccessKit.xcframework
+
+      - name: Upload xcframework
+        uses: actions/upload-artifact@v7
+        with:
+          name: visionos-xcframework
+          path: accesskit-c/lib
+
   publish:
-    needs: [build-binaries, package-ios-xcframework]
+    needs: [build-binaries, package-ios-xcframework, package-xros-xcframework]
     runs-on: ubuntu-latest
     name: Publish
 
